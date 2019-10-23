@@ -4,8 +4,7 @@ This project contains the code of the Non-Dominated Sorting Biased Random-Key Ge
 
 ### Compiling the code
 
-Before running NDS-BRKGA, it is needed to compile its code as well as the code of its sub-algorithms (see our paper for further details). To this end, just run the following commands:
-
+Before running the NDS-BRKGA, it is needed to compile its code as well as the code of its sub-algorithms (see our paper for further details). To this end, just run the following command:
 
 ```console
 $ sh compile.sh
@@ -21,8 +20,8 @@ $ python launcher.py <instance> <output> <N> <N_e> <N_m> <rho_e> <alpha> <omega>
         <instance>              : Instance name
         <output>                : Two output files are generated: <output>.x contains the list of all non-dominated solutions and <output>.f the list of objective values
         <N>                     : Population size
-        <N_e>                   : Elite population size
-        <N_m>                   : Mutant population size
+        <N_e>                   : Elite population size in terms of N (e.g. <N_e> = 0.1 --> 0.1N elite individuals)
+        <N_m>                   : Mutant population size in terms of N (e.g. <N_m> = 0.1 --> 0.1N mutant individuals)
         <rhoe_e>                : Elite allele inheritance probability
         <alpha>                 : Fraction of the initial population created from TSP and KP solutions
         <omega>                 : Frequency of local search procedure
