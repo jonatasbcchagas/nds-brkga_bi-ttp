@@ -13,22 +13,22 @@ $ sh compile.sh
 ### Usage:
 
 ```console
-$ python launcher.py instance output N N_e N_m rho_e alpha omega tsp_t kp_delta execution_number runtime -a
+$ python launcher.py <instance> <output> <N> <N_e> <N_m> <rho_e> <alpha> <omega> <tsp_t> <kp_delta> <execution_number> <runtime> -a
 
   where:
 
-        instance              : Instance name
-        output                : Two output files are generated: output.x contains the list of all non-dominated solutions and output.f the list of objective values
-        N                     : Population size
-        N_e                   : Elite population size in terms of N (e.g. N_e = 0.1 -- 0.1N elite individuals)
-        N_m                   : Mutant population size in terms of N (e.g. N_m = 0.1 -- 0.1N mutant individuals)
-        rhoe_e                : Elite allele inheritance probability
-        alpha                 : Fraction of the initial population created from TSP and KP solutions
-        omega                 : Frequency of local search procedure
-        tsp_t:                : Time limit in seconds to solve the TSP component via LKH algorithm
-        kp_delta              : Maximum capacity of the sub-knapsack solved by the dynamic programming algorithm
-        execution_number      : Execution number of the NDS-BRKGA
-        runtime               : Number of processing hours of the NDS-BRKGA (stopping criterion)
+        <instance>              : Instance name
+        <output>                : Two output files are generated: <output>.x contains the list of all non-dominated solutions and <output>.f the list of objective values
+        <N>                     : Population size
+        <N_e>                   : Elite population size in terms of <N> (e.g. <N_e> = 0.1 --> 0.1<N> elite individuals)
+        <N_m>                   : Mutant population size in terms of <N> (e.g. <N_m> = 0.1 --> 0.1<N> mutant individuals)
+        <rhoe_e>                : Elite allele inheritance probability
+        <alpha>                 : Fraction of the initial population created from TSP and KP solutions
+        <omega>                 : Frequency of local search procedure
+        <tsp_t>:                : Time limit in seconds to solve the TSP component via LKH algorithm
+        <kp_delta>              : Maximum capacity of the sub-knapsack solved by the dynamic programming algorithm
+        <execution_number>      : Execution number of the NDS-BRKGA
+        <runtime>               : Number of processing hours of the NDS-BRKGA (stopping criterion)
         -a                    : Store all non-dominated solutions found throughout the algorithm execution (optional parameter) 
 ```
 
