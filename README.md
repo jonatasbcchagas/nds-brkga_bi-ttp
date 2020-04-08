@@ -1,6 +1,6 @@
-# A Non-Dominated Sorting Biased Random-Key Genetic Algorithm for the Bi-Objective Traveling Thief Problem
+# A Non-Dominated Sorting Based Customized Random-Key Genetic Algorithm for the Bi-Objective Traveling Thief Problem
 
-This project contains the code of the Non-Dominated Sorting Biased Random-Key Genetic Algorithm (NDS-BRKGA), which is described in detail in [link to paper], for solving the Bi-Objective Traveling Thief Problem (BI-TTP).
+This project contains the code of the Non-Dominated Sorting Based Customized Random-Key Genetic Algorithm (NDS-BRKGA), which is described in detail in [link to paper], for solving the Bi-Objective Traveling Thief Problem (BI-TTP).
 
 ### Compiling the code
 
@@ -29,7 +29,7 @@ $ python launcher.py <instance> <output> <N> <N_e> <N_m> <rho_e> <alpha> <omega>
         <kp_delta>              : Maximum capacity of the sub-knapsack solved by the dynamic programming algorithm
         <execution_number>      : Execution number of the NDS-BRKGA
         <runtime>               : Number of processing hours of the NDS-BRKGA (stopping criterion)
-        -a                    : Store all non-dominated solutions found throughout the algorithm execution (optional parameter) 
+        -a                      : Store all non-dominated solutions found throughout the algorithm execution (optional parameter) 
 ```
 
 Example:
