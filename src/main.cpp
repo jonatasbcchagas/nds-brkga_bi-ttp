@@ -7,22 +7,97 @@
 #include <algorithm>
 #include <chrono>
 #include <fstream>
+#include <list>
 
 #include "data.h"
 #include "ndsbrkga.h"
 
 using namespace std;
 
+class NonDominatedSet {
+
+    private:
+        
+            list < pair < double, double > > allNDS;
+
+    public:
+        
+            NonDominatedSet() {};
+            
+            int getRelation(pair < double, double > a, pair < double, double > b) {
+                
+                int val = 0;
+            
+                if (a.first < b.first) {
+                    if (val == -1) return 0;
+                    val = 1;
+                } else if (a.first > b.first) {
+                    if (val == 1) return 0;
+                    val = -1;
+                }
+                
+                if (a.second < b.second) {
+                    if (val == -1) return 0;
+                    val = 1;
+                } else if (a.second > b.second) {
+                    if (val == 1) return 0;
+                    val = -1;
+                }
+
+                return val;
+            }
+            
+            void add(pair < double, double > s) {
+
+                bool isAdded = true;
+
+                list < pair < double, double > > :: iterator it = allNDS.begin();
+                
+                for(; it != allNDS.end(); ++it) {
+                    
+                    pair < double, double > other = *it;
+
+                    int rel = getRelation(s, other);
+
+                    // if dominated by or equal in design space
+                    if (rel == -1 || (rel == 0 && s == other)) {
+                        isAdded = false;
+                        break;
+                    } else if (rel == 1) it = allNDS.erase(it);
+
+                }
+
+                if (isAdded) allNDS.push_back(s);
+            }
+
+            void updateNDS(vector < pair < double, double > > &inputNDS) {
+                
+                for(int i = 0; i < (int)inputNDS.size(); ++i) {
+                    add(inputNDS[i]);
+                }
+            }
+            
+            void printNDS(ofstream &fout) {
+                
+                allNDS.sort();
+                list < pair < double, double > > :: iterator it = allNDS.begin();                
+                for(; it != allNDS.end(); ++it) {
+                    fout << fixed << setprecision(5) << fabs(it->first) << ' ' << setprecision(0) << fabs(it->second) << endl;
+                }
+            }
+};
+
+
 int main(int argc, char **argv) {
 
-    if(argc < 15 ) {
-        clog << "\n       Usage:\n                     ./BITTP   input_file   output_file   N   N_e   N_m   rho_e   alpha   improv_phase_often   delta   execution_number  runtime   tsp_solution_file   kp_solution_file   preprocessing_time   store_all_nds" << endl << endl;
+    if(argc < 14 ) {
+        clog << "\n       Usage:\n                     ./BITTP   input_file   output_file   N   N_e   N_m   rho_e   alpha   improv_phase_often   delta   execution_number  runtime   tsp_solution_file   kp_solution_file   preprocessing_time" << endl << endl;
         exit(0);
     }
         
     const string instanceFileName = argv[1];
     const string solutionFileName = argv[2];
-    int n, execution_number, repair_operator_id, freqImprovPhase, store_all_nds;
+    int n, execution_number, repair_operator_id, freqImprovPhase;
     double n_e, n_m, rhoe, alpha, runtime, preprocessing_time = 0.0;
     sscanf(argv[3], "%d", &n);
     sscanf(argv[4], "%lf", &n_e);
@@ -35,13 +110,12 @@ int main(int argc, char **argv) {
     string tspSolutionFileName = argv[11];
     string kpSolutionFileName = argv[12];
     sscanf(argv[13], "%lf", &preprocessing_time);    
-    sscanf(argv[14], "%d", &store_all_nds);    
-    
-    string solutionFileNameF = solutionFileName; solutionFileNameF += ".f";    
-    string solutionFileNameX = solutionFileName; solutionFileNameX += ".x";
-    
     
     Data::getInstance().readData(instanceFileName);   
+    
+    NonDominatedSet NDS;
+    vector < pair < double, double > > inputNDS;
+    
 
     const unsigned chromosomeSize = Data::getInstance().numCities - 1 + Data::getInstance().numItems;    
     
@@ -70,29 +144,54 @@ int main(int argc, char **argv) {
 
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
     duration < double > time_span = duration_cast < duration < double > > (t2 - t1);
-        
+
+    int saveID = max(1, (int)(ceil(preprocessing_time/600.0)));
+
+    char fileName[100];       
+    ofstream fout;
+    
+    inputNDS.clear();
+    ndsbrkga.storeReferenceSolutionSet(inputNDS);
+    NDS.updateNDS(inputNDS);
+            
     while(1) {
-       
+        
+        generation += 1;
+               
         high_resolution_clock::time_point t2 = high_resolution_clock::now();
         duration<double> time_span = duration_cast<duration<double> >(t2 - t1);
         
-        ndsbrkga.evolve();  // evolve the population for one generation    
+        ndsbrkga.evolve();  // evolve the population for one generation 
         
-        if(store_all_nds == 1) ndsbrkga.saveReferenceSolutionSet(solutionFileNameX, solutionFileNameF);
+        inputNDS.clear();
+        ndsbrkga.storeReferenceSolutionSet(inputNDS);
+        NDS.updateNDS(inputNDS);
         
         if(generation % freqImprovPhase == 0) {
             ndsbrkga.localSearch();
-            if(store_all_nds == 1) ndsbrkga.saveReferenceSolutionSet(solutionFileNameX, solutionFileNameF);
+            inputNDS.clear();
+            ndsbrkga.storeReferenceSolutionSet(inputNDS);
+            NDS.updateNDS(inputNDS);
         }
         
-        generation += 1;
-        
         if((double)time_span.count() + preprocessing_time >= runtime*3600) {
-            if(store_all_nds == 0) ndsbrkga.saveReferenceSolutionSet(solutionFileNameX, solutionFileNameF);
+            sprintf(fileName, "%s.f.allnds", solutionFileName.c_str());
+            ofstream fout(fileName);            
+            NDS.printNDS(fout);            
+            fout.close();
+            sprintf(fileName, "%s.f", solutionFileName.c_str());
+            fout.open(fileName);
+            ndsbrkga.saveReferenceSolutionSet(fout, false);
+            fout.close();
+            sprintf(fileName, "%s.x", solutionFileName.c_str());
+            fout.open(fileName);
+            ndsbrkga.saveReferenceSolutionSet(fout, true);
+            fout.close();
             exit(0); 
         }
     }
-       
+    
+        
     return 0;
 }
 

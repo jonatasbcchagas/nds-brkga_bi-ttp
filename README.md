@@ -13,7 +13,7 @@ $ sh compile.sh
 ### Usage:
 
 ```console
-$ python launcher.py <instance> <output> <N> <N_e> <N_m> <rho_e> <alpha> <omega> <tsp_t> <kp_delta> <execution_number> <runtime> -a
+$ python launcher.py <instance> <output> <N> <N_e> <N_m> <rho_e> <alpha> <omega> <tsp_t> <kp_delta> <execution_number> <runtime>
 
   where:
 
@@ -29,12 +29,10 @@ $ python launcher.py <instance> <output> <N> <N_e> <N_m> <rho_e> <alpha> <omega>
         <kp_delta>              : Maximum capacity of the sub-knapsack solved by the dynamic programming algorithm
         <execution_number>      : Execution number of the NDS-BRKGA
         <runtime>               : Number of processing hours of the NDS-BRKGA (stopping criterion)
-        -a                      : Store all non-dominated solutions found throughout the algorithm execution (optional parameter) 
 ```
 
 Example:
 
 ```console
-$ python launcher.py instance/a280_n279 a280_n279.sol 500 0.4 0.1 0.7 0.2 10 300 5000 1 0.5
-$ python launcher.py instance/a280_n1395 a280_n1395.sol 500 0.5 0.0 0.6 0.1 10 300 5000 1 0.5 -a
+$ python launcher.py instances/a280_n279 a280_n279.sol 1000 0.6 0.0 0.8 0.3 50 300 50000 1 5
 ```

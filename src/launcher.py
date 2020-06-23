@@ -73,13 +73,13 @@ def solve_kp_ghdp(input_file, output_file, execution_number, kp_delta):
     os.system("./KPComponent/KP " + input_file + " " + kp_solution_file + " " + kp_delta)
     return kp_solution_file
 
-def run_algorithm(input_file, output_file, n, n_e, n_m, rho_e, alpha, omega, tsp_t, kp_delta, execution_number, runtime, storeallnds):
+def run_algorithm(input_file, output_file, n, n_e, n_m, rho_e, alpha, omega, tsp_t, kp_delta, execution_number, runtime):
 
     start = time.time()
     tsp_solution_file = solve_tsp_lkh(input_file, output_file, execution_number, tsp_t)
     kp_solution_file = solve_kp_ghdp(input_file, output_file, execution_number, kp_delta)
     end = time.time()
-    os.system("./BITTP %s %s %s %s %s %s %s %s %s %s %s %s %.3f %d" % (input_file, output_file, n, n_e, n_m, rho_e, alpha, omega, execution_number, runtime, tsp_solution_file, kp_solution_file, end - start, 1 if storeallnds else 0))
+    os.system("./BITTP %s %s %s %s %s %s %s %s %s %s %s %s %.3f" % (input_file, output_file, n, n_e, n_m, rho_e, alpha, omega, execution_number, runtime, tsp_solution_file, kp_solution_file, end - start))
 
 if __name__ == "__main__":
 
@@ -96,8 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("kp_delta", help="maximum capacity of the sub-knapsack solved by dynamic programming")
     parser.add_argument("execution_number", help="execution number from [1, 100]")
     parser.add_argument("runtime", help="number of processing hours of the NDS-BRKGA (stopping criterion)")
-    parser.add_argument("-a", "--storeallnds", help="store all non-dominated solutions found throughout the algorithm execution ()", action="store_true")
     args = parser.parse_args()
 
-    run_algorithm(args.input_file, args.output_file, args.N, args.N_e, args.N_m, args.rho_e, args.alpha, args.omega, args.tsp_t, args.kp_delta, args.execution_number, args.runtime, args.storeallnds)
+    run_algorithm(args.input_file, args.output_file, args.N, args.N_e, args.N_m, args.rho_e, args.alpha, args.omega, args.tsp_t, args.kp_delta, args.execution_number, args.runtime)
 

@@ -7,7 +7,6 @@
 #include <cmath>
 #include <vector>
 #include <set>
-#include <list>
 #include <random>
 #include <algorithm>
 #include <climits>
@@ -15,7 +14,7 @@
 #include <iomanip>
 
 const double INF = 987654321;
-const double EPS = 1E-4;
+const double EPS = 1E-5;
 
 using namespace std;
 
@@ -38,7 +37,7 @@ class Decoder {
             void decode(std::pair < std::vector < double >, std::vector < double > >&);    
             void localSearch(std::pair < std::vector < double >, std::vector < double > >&, Population*);            
             bool compare(const std::pair < std::vector < double >, std::vector < double > >&, const std::pair < std::vector < double >, std::vector < double > >&) const;                    
-            void save(const std::pair < std::vector < double >, std::vector < double > >&, ofstream&, ofstream&) const;
+            void save(const std::pair < std::vector < double >, std::vector < double > >&, ofstream&) const;
             
             static std::default_random_engine generator;
   
@@ -46,7 +45,7 @@ class Decoder {
             
     private:
         
-            void repairOperator(std::pair < std::vector < double >, std::vector < double > >&, std::vector < std::pair < double, int > >&, std::vector < int >&, int, std::vector < int >&, std::vector < int >&, int) const;
+            void repairOperator(std::pair < std::vector < double >, std::vector < double > >&, std::vector < std::pair < double, int > >&, std::vector < int >&, std::vector < int >&, std::vector < int >&, int) const;
             
             Decoder() {};
 };
@@ -401,7 +400,9 @@ class Population {
             // (this is done by NDSBRKGA, so rest assured: everything will work just fine with NDSBRKGA).
             const std::pair < std::vector < double >, std::vector < double > >& getChromosome(unsigned i) const;         // Returns i-th best chromosome
             
-            void saveReferenceSolutionSet(string fileX, string fileF) const;
+            void saveReferenceSolutionSet(ofstream &fout, bool printsol) const;
+            
+            void storeReferenceSolutionSet(vector < pair < double, double > > &inputNDS) const;
             
             void clear();
             
@@ -454,105 +455,38 @@ inline std::pair < std::vector < double >, std::vector < double > >& Population:
     return population[ fitness[i].second ];
 }
 
-inline void Population::saveReferenceSolutionSet(string fileX, string fileF) const {
-
-    std::vector < std::pair < std::pair < double, double >, std::pair < int, int > > > listObj;
+inline void Population::saveReferenceSolutionSet(ofstream &fout, bool printsol) const {
     
-    ifstream finF(fileF.c_str());
-    
-    double _time, _profit;
-    if(finF) {
-        int idSol = 0;
-        while(finF >> _time >> _profit) {
-            //clog << _time << ' ' << _profit << endl;
-            listObj.push_back(std::make_pair(std::make_pair(_time, -_profit), std::make_pair(idSol, 1)));
-            idSol += 1;
-        }
-    }    
-    finF.close();
-    
-    //clog << fixed << setw(20) << listObj.size() << ' ';
+    std::vector < std::pair < double, double > > vt;
     
     for(unsigned i = 0; i < population.size(); ++i) {        
         if(fitness[i].first.first != 0) break;
-        listObj.push_back(std::make_pair(std::make_pair(population[ fitness[i].second ].second[0], population[ fitness[i].second ].second[1]), std::make_pair(i, 0)));
-    }
-    
-    std::vector < std::pair < int, int > > ndsIDs;
-        
-    for(unsigned p = 0; p < listObj.size(); ++p) {        
-        bool dominates = true;            
-        for(unsigned q = 0; q < listObj.size(); ++q) {            
-            if(p == q) continue;     
-            
-            int val = 0;            
-           
-            if(listObj[p].first.first + EPS < listObj[q].first.first)      val = 1;
-            else if(listObj[p].first.first - EPS > listObj[q].first.first) val = -1;   
-            
-            
-            if(listObj[p].first.second + EPS < listObj[q].first.second) {
-                if(val == -1) val = 0; else val = 1;
-            }
-            else if(listObj[p].first.second - EPS > listObj[q].first.second) {
-                if(val == 1) val = 0; else val = -1;
-            }
-                        
-            if(val == -1 || (p > q && val == 0 && fabs(listObj[p].first.first - listObj[q].first.first) < EPS && fabs(listObj[p].first.second - listObj[q].first.second) < EPS)) {
-                dominates = false;
-                break;
-            }
-        }        
-        if(dominates) {
-            ndsIDs.push_back(listObj[p].second);            
+        if(printsol) Decoder::getInstance().save( population[ fitness[i].second ], fout );
+        else {
+            //for(unsigned j = 0; j < population[0].second.size(); ++j) {
+                //fout << fixed << setw(40) << setprecision(20) << fabs(population[ fitness[i].second ].second[j]) << ' ';
+            //}
+            //fout << endl;
+            vt.push_back(std::make_pair(fabs(population[ fitness[i].second ].second[0]), fabs(population[ fitness[i].second ].second[1])));
         }
+    }    
+    
+    sort(vt.begin(), vt.end());
+    
+    for(unsigned i = 0; i < vt.size(); ++i) {       
+        fout << fixed << setprecision(5) << vt[i].first << ' ' << fixed << setprecision(0) << vt[i].second << endl;
     }
+}
+
+
+inline void Population::storeReferenceSolutionSet(std::vector < pair < double, double > > &inputNDS) const {
     
-    //clog << fixed << setw(20) << listObj.size() << ' ' << fixed << setw(20) << ndsIDs.size() << endl;
+    std::vector < std::pair < double, double > > vt;
     
-    std::set < int > st1, st2;
-    for(unsigned i = 0; i < ndsIDs.size(); ++i) {
-        if(ndsIDs[i].second == 1) st1.insert(ndsIDs[i].first);
-        else st2.insert(ndsIDs[i].first);
+    for(unsigned i = 0; i < population.size(); ++i) {        
+        if(fitness[i].first.first != 0) break;
+        inputNDS.push_back(std::make_pair(population[ fitness[i].second ].second[0], population[ fitness[i].second ].second[1]));
     }
-    
-    if(st2.size() == 0) return;
-        
-    string fileXAux = fileX; fileXAux += ".aux";        
-    string fileFAux = fileF; fileFAux += ".aux";
-    
-    ofstream foutXAux(fileXAux.c_str());
-    ofstream foutFAux(fileFAux.c_str());
-    
-    ifstream finX(fileX.c_str());
-    finF.open(fileF.c_str());
-    
-    string _tour, _items, _endline;
-    
-    int idSolution = 0;
-    while(finF >> _time >> _profit) {
-        getline(finX, _tour);
-        getline(finX, _items);            
-        getline(finX, _endline);                        
-        if(st1.find(idSolution) != st1.end()) {
-            foutXAux << _tour << endl << _items << endl << endl;
-            foutFAux << fixed << setprecision(12) << _time << ' ' << fixed << setprecision(0) << _profit << endl;
-        }
-        idSolution += 1;
-    }
-        
-    std::set < int > :: iterator it = st2.begin();
-    for(; it != st2.end(); ++it) Decoder::getInstance().save( population[ fitness[*it].second ], foutXAux, foutFAux );        
-    foutXAux.close();
-    foutFAux.close();
-    
-    //clog << "rename " << fileXAux << ' ' << fileX << endl;
-    //clog << "rename " << fileFAux << ' ' << fileF << endl;        
-    
-    rename(fileXAux.c_str(), fileX.c_str());
-    rename(fileFAux.c_str(), fileF.c_str());
-    
-    //exit(0);    
 }
 
 inline void Population::clear() {
@@ -783,7 +717,10 @@ class NDSBRKGA {
         */
         const Population& getPopulation(unsigned k = 0) const;
                 
-        void saveReferenceSolutionSet(string fileX, string fileF) const;
+        void saveReferenceSolutionSet(ofstream &fout, bool printsol = true) const;
+        
+        void storeReferenceSolutionSet(std::vector < pair < double, double > > &inputNDS) const;
+        
 
         // Return copies to the internal parameters:
         unsigned getN() const;
@@ -1065,10 +1002,18 @@ inline void NDSBRKGA< Decoder, RNG >::initialize(const unsigned k) {
 }
 
 template< class Decoder, class RNG >
-inline void NDSBRKGA< Decoder, RNG >::saveReferenceSolutionSet(string fileX, string fileF) const {
+inline void NDSBRKGA< Decoder, RNG >::saveReferenceSolutionSet(ofstream &fout, bool printsol) const {
      
     for(unsigned k = 0; k < K; ++k) {
-        current[k]->saveReferenceSolutionSet(fileX, fileF);  
+        current[k]->saveReferenceSolutionSet(fout, printsol);  
+    }
+}
+
+template< class Decoder, class RNG >
+inline void NDSBRKGA< Decoder, RNG >::storeReferenceSolutionSet(std::vector < pair < double, double > > &inputNDS) const {
+     
+    for(unsigned k = 0; k < K; ++k) {
+        current[k]->storeReferenceSolutionSet(inputNDS);  
     }
 }
 
@@ -1213,8 +1158,6 @@ inline void NDSBRKGA< Decoder, RNG >::localSearch() {
             current[k]->population[i] = all->population[all->fitness[i].second];
             current[k]->fitness[i].second = i;
         }
-        
-        //current[k]->sortFitness(getPe());       
         
         all->clear();    
         delete all;
