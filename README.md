@@ -1,6 +1,6 @@
 # A Non-Dominated Sorting Based Customized Random-Key Genetic Algorithm for the Bi-Objective Traveling Thief Problem
 
-This project contains the code of the Non-Dominated Sorting Based Customized Random-Key Genetic Algorithm (NDS-BRKGA), which is described in detail in [link to paper], for solving the Bi-Objective Traveling Thief Problem (BI-TTP).
+This project contains the code of the Non-Dominated Sorting Based Customized Random-Key Genetic Algorithm (NDS-BRKGA), which is described in detail in [Chagas et al. (2020)](https://doi.org/10.1007/s10732-020-09457-7), for solving the Bi-Objective Traveling Thief Problem (BI-TTP).
 
 ### Compiling the code
 
